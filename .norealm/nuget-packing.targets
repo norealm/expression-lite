@@ -1,0 +1,21 @@
+<Project>
+  <Target Name="CreateNugetCacheDirectory" BeforeTargets="CollectPackageReferences">
+    <MakeDir Directories="$(PackageDir)" Condition="!Exists('$(PackageDir)')" />
+  </Target>
+
+  <Target Name="MoveNugetPackages" AfterTargets="Pack">
+    <ItemGroup>
+      <NugetPackeges Include="$(OutputPath)*.nupkg"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NugetPackeges)" DestinationFolder="$(PackageDir)" OverwriteReadOnlyFiles="true" />
+    <Delete Files="@(NugetPackeges)" />
+  </Target>
+
+  <Target Name="PackingInDevelopmentProjectsNotAllowed" BeforeTargets="Pack">
+    <Error
+      Text="The InDevelopment flag is set to true, please change it to false in order to build the package."
+      Condition=" '$(InDevelopment)' == 'true'"
+      File="$(MSBuildProjectFullPath)" />
+  </Target>
+</Project>

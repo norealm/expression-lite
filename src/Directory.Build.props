@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'NoRealm.ExpressionLite'">
+    <InternalName>expression-lite</InternalName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'NoRealm.ExpressionLite.Test'">
+    <InternalName>expression-lite-test</InternalName>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <IsTest>true</IsTest>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'NoRealm.ExpressionLite.Test'">
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <_HavePreReleaseVersion>true</_HavePreReleaseVersion>
+    <_HavePreReleaseVersion Condition="'$(PreReleaseVersion)'==''">false</_HavePreReleaseVersion>
+
+    <_AppendConfiguration>true</_AppendConfiguration>
+    <_AppendConfiguration Condition="'$(WithConfiguration)'!=''">$(WithConfiguration)</_AppendConfiguration>
+    <_AppendConfiguration Condition="'$(WithConfiguration)'=='' AND '$(Configuration)'=='Release' AND '$(PreReleaseVersion)'==''">false</_AppendConfiguration>
+
+    <_StageNugetVersion>$(CurrentVersion)</_StageNugetVersion>
+    <_StageNugetVersion Condition="'$(PreReleaseVersion)'!=''">$(_StageNugetVersion)-pre.$(PreReleaseVersion)</_StageNugetVersion>
+    <_StageNugetVersion Condition="'$(_AppendConfiguration)'=='true'">$(_StageNugetVersion)-$(Configuration.ToLower())</_StageNugetVersion>
+
+    <_StageDotNetVersion>$(CurrentVersion)</_StageDotNetVersion>
+    <_StageDotNetVersion Condition="'$(PreReleaseVersion)'==''">$(CurrentVersion).0</_StageDotNetVersion>
+    <_StageDotNetVersion Condition="'$(PreReleaseVersion)'!=''">$(CurrentVersion).$(PreReleaseVersion)</_StageDotNetVersion>
+
+    <Version>$(_StageNugetVersion)</Version>
+    
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <FileVersion>$(_StageDotNetVersion)</FileVersion>
+
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <AssemblyVersion>$(_StageDotNetVersion)</AssemblyVersion>
+  </PropertyGroup>
+</Project>

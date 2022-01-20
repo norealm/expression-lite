@@ -1,0 +1,36 @@
+<Project>
+  <PropertyGroup>
+    <PreReleaseVersion>1</PreReleaseVersion>
+    <CurrentVersion>0.9.1</CurrentVersion>
+    <WithConfiguration>false</WithConfiguration>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" Condition="Exists('$(MSBuildThisFileDirectory)../Directory.Build.props')" />
+  <Import Project=".norealm/norealm.proj" />
+
+  <PropertyGroup>
+    <CentralPackagesFile>$(MSBuildThisFileDirectory)packages.props</CentralPackagesFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Configurations>Debug;Release</Configurations>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>NoRealm ExpressionLite</Product>
+    <RepositoryUrl>https://github.com/norealm/expression-lite/</RepositoryUrl>
+    <PackageTags>$(PackageTags);csharp;compiler;dotnet;expression;expression-parser;expression-tree;recursive-descent-parser;runtime-compliation;expression-lite;</PackageTags>
+    <PackageDescription>A powerful expression compiler for .NET</PackageDescription>
+  </PropertyGroup>
+</Project>

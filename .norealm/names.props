@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <PackageDirName>.packages</PackageDirName>
+    <SourceDirName>src</SourceDirName>
+
+    <RootDir>$(MSBuildThisFileDirectory)../</RootDir>
+    <SourceDir>$(MSBuildThisFileDirectory)../$(SourceDirName)/</SourceDir>
+
+    <InternalName Condition="'$(InternalName)' == ''">$(MSBuildProjectName)</InternalName>
+    <PublicName Condition="'$(PublicName)' == ''">$(MSBuildProjectName)</PublicName>
+    <InDevelopment Condition="'$(InDevelopment)' == ''">false</InDevelopment>
+    <IsTest Condition="'$(IsTest)' == ''">false</IsTest>
+    <CurrentVersion Condition="'$(CurrentVersion)' == ''">0.0.1</CurrentVersion>
+    <PreReleaseVersion Condition="'$(PreReleaseVersion)' == ''">1</PreReleaseVersion>
+
+    <StartupDir Condition="'$(StartupDir)' == ''">$(MSBuildThisFileDirectory)../</StartupDir>
+    <BuildDir Condition="'$(BuildDir)' == ''">$(StartupDir).build/</BuildDir>
+    <PackageDir>$(StartupDir)$(PackageDirName)/</PackageDir>
+
+    <BaseIntermediateOutputPath>$(BuildDir)obj/$(InternalName)/</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(IsTest)' == 'false'">$(BuildDir)bin/$(Configuration)/$(InternalName)/</OutputPath>
+    <OutputPath Condition="'$(IsTest)' == 'true'">$(BuildDir)test/$(Configuration)/$(InternalName)/</OutputPath>
+  </PropertyGroup>
+</Project>
