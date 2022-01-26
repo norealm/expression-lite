@@ -22,7 +22,7 @@ namespace NoRealm.ExpressionLite.Scanner
             var str = new StringBuilder();
 
             // skip start and end double-quotes
-            for (var i = 0; i < value.Length - 1; ++i)
+            for (var i = 1; i < value.Length - 1; ++i)
             {
                 if (value[i] != '\\')
                 {

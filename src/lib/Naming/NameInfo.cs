@@ -59,14 +59,14 @@ namespace NoRealm.ExpressionLite.Naming
             if (propertySelector == null)
                 throw new ArgumentNullException(nameof(propertySelector));
 
-            var member = GetLambdaInfo(propertySelector,
+            var result = GetLambdaInfo(propertySelector,
                 "the only expressions are allowed in this context is to access a property or a field in input instance",
                 true);
 
-            if (member is not {Expression: ParameterExpression})
+            if (result is not (MemberExpression {Expression: ParameterExpression} me))
                 throw new ArgumentException("you can only use input parameter to select a property/field from it.");
 
-            return new InternalNameInfo {Value = member.Member, NameType = NameType.Member, StaticType = member.Type};
+            return new InternalNameInfo {Value = me.Member, NameType = NameType.Member, StaticType = me.Type};
         }
 
         /// <summary>
@@ -80,14 +80,19 @@ namespace NoRealm.ExpressionLite.Naming
             if (propertySelector == null)
                 throw new ArgumentNullException(nameof(propertySelector));
 
-            var member = GetLambdaInfo(propertySelector,
+            var result = GetLambdaInfo(propertySelector,
                 "the only expressions are allowed in this context is to access a property or a field in input instance",
                 false);
 
-            if (member == null)
+            if (result == null)
                 throw new ArgumentException("you can only access the property/field in here, you can not use an expression to do that");
 
-            return new InternalNameInfo {Value = member.Member, NameType = NameType.Member, StaticType = member.Type};
+            if (result is ConstantExpression ce)
+                return new InternalNameInfo {Value = ce.Value.NumberToDecimal(), NameType = NameType.Plain, StaticType = KnownTypes.Number};
+
+            var me = (MemberExpression) result;
+
+            return new InternalNameInfo {Value = me.Member, NameType = NameType.Member, StaticType = me.Type};
         }
 
         /// <summary>
@@ -109,7 +114,7 @@ namespace NoRealm.ExpressionLite.Naming
             return new InternalNameInfo {Value = linqExpression, NameType = NameType.LinqExpression, StaticType = typeof(U)};
         }
 
-        private static MemberExpression GetLambdaInfo(LambdaExpression expression, string message, bool haveParam)
+        private static Expression GetLambdaInfo(LambdaExpression expression, string message, bool haveParam)
         {
             var exp = expression.Body;
 
@@ -118,6 +123,9 @@ namespace NoRealm.ExpressionLite.Naming
 
             if (exp.NodeType == ExpressionType.Convert)
                 exp = ((UnaryExpression) exp).Operand;
+
+            if (exp.NodeType == ExpressionType.Constant)
+                return exp;
 
             if (exp.NodeType != ExpressionType.MemberAccess)
                 throw new ArgumentException(message);
