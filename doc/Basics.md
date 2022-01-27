@@ -144,9 +144,11 @@ Use the function `NameInfo.FromOtherMember` to define this type of name. this fu
   1. `FromOtherMember<T>(Expression<Func<T, object>> propertySelector)`.
   2. `FromOtherMember(Expression<Func<object>> propertySelector)`.
 
-The 1st overload takes an instance of type `T` and return the member. The 2nd overload doesn't take any input and it is used with static members.
+The 1st overload takes an instance of type `T` and return the member. The 2nd overload doesn't take any input and it is used with static/constant members.
 
-> for any overload no operation is allowed, Only access the member you want to be the source of the value.
+> For any overload no operation is allowed, Only access the member you want to be the source of the value.
+
+> Also be careful when using constants, the Roslyn compiler replace them with their values, so when trying to deduce the constant from expression we only get a `ConstantExpression` that matches the constant value not a `MemberExpression` for the constant.
 
 example usage:
 
@@ -157,7 +159,7 @@ id = NameInfo.FromOtherMember(() => Employee.NumberOfVacationDays);
 
 class Employee
 {
-  public const int NumberOfVacationDays;
+  public const int NumberOfVacationDays = 10;
 
   public int BasicSalary;
 }
@@ -242,7 +244,7 @@ Every data type has a predefined set of operations, here we list them.
 | Operation   |  Example               | Result  |
 |-------------|------------------------|---------|
 | And         | true && false          | false   |
-| Or          | true || false          | true    |
+| Or          | true \|\| false          | true    |
 | Not         | !true                  | false   |
 | Equality    | true == false          | false   |
 | Inequality  | true != false          | true    |
@@ -260,5 +262,4 @@ And the `true-part` and `false-part` must have the same data type.
 
 ## Final note
 
-The operators `in` and `have` are exist in this version because functions are not yet existed, and once it implemented in later releases they will be replaced with functions with same name but with different way of invoking.
-
+The operators `in` and `have` are exist in this version because functions are not yet existed, and once it get added in next versions they will be replaced with functions with same name but with different way of invoking.

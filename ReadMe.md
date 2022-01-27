@@ -117,6 +117,15 @@ var exp = "salary + tax".ToLinqExpression<Employee, decimal>(
 
 All these versions return the excat result and depending in your needs.
 
+4. Runtime functions with identifiers
+
+You can execute the 3rd example but instead of using `ToLinqExpression` use `ToRuntimeMethod`.
+
+```csharp
+// the func is the result of calling ToRuntimeMethod
+var result = func(new Employee{Salary = 100});
+```
+
 The class `NameInfo` have static members to get values from different sources, please see the docs for more details.
 
 ## License
