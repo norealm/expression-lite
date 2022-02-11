@@ -45,7 +45,6 @@ The `Scanner` is the part of the library responsible for converting some string 
   1. Token: this component defines token types and a way to convert a lexeme into some native form, exist in the namespace `NoRealm.ExpressionLite.Token`.
   2. Scanner: this is the scanner which uses the tokens and the lexeme converter to create a series of tokens, exist in the namespace `NoRealm.ExpressionLite.Scanner`.
 
-
 #### Tokens
 
 First, we have the enum `TokenGroup` which define the available token types, then we have the interface `IToken` which represent a generic token, Also we have the interface `IKnownToken` which represent a predefined token such as `if` or `==`.
@@ -60,7 +59,7 @@ Also we have the types `IdentifierToken`, `LiteralToken` and `WhitespaceToken` w
 
 The scanner is the component that convert a string into a series of tokens. We have 2 interfaces to define the work of the scanner, `IScannerFactory` and `IScanner`.
 
-As the name implies, the `IScannerFactory` represent the factory class which creates the scanner instances, and the created scanner is implementing the `IScanner` interface.
+As the name implies, the `IScannerFactory` represent the factory class which creates the scanner instances, and the created scanner implements the `IScanner` interface.
 
 The type `ScannerOptions` have properties to customize the scanner working:
 
@@ -96,7 +95,76 @@ foreach (var token in tokens)
 // Identifier: salary
 ```
 
-
 ### Stage 2: Parsing
 
-// TODO
+In this stage we take the token series and target to create expression tree which matches the input token series.
+
+This stage have 3 components:
+
+  1. User-Defined Names: which requires the user to provide the value source of some identifier.
+  2. Expression tree: is the abstract syntax tree of that represent the expression.
+  3. Parser: is the part which responsible if converting the tokens to expression tree and validate the types and optimize the final expression.
+
+#### User-Defined Names
+
+The identifiers used inside the expression are known to the user but not for the library, and the user must provide a source to extract the value from, and this is the responsibility for the types in the namespace `NoRealm.ExpressionLite.Naming`.
+
+The entry point is the type `NameInfo` which have the helper methods that creates a name, The name itself is of type `INameInfo` which wraps the information about that name, one important property of it is `NameType` which have a type with same name with the values determine the type of source.
+
+> Creating a name using `NameInfo` will not set the property `Name` in the returned object, this is done by the parser because it is the one which requesting it.
+
+One or more objects where their type implements `INameProvider` is required by the parser in order for it to call `GetNameInfo` to get the information needed about an identifier.
+
+> Internally all names created by `NameInfo` are of type `InternalNameInfo` which is a simple POCO class
+
+#### Expression tree
+
+This is the abstract syntax tree which model the parsed expression, the it is returned by the parser after finishing analyzing the tokens.
+
+The expression tree have two main types `IExpression` and `IExpressionVisitor`.
+
+The `IExpression` represent expression abstraction which contains the properties:
+
+  1. `NodeType`: which have type with same name and the value is expression node content type.
+  2. `StaticType`: represent the static type of this expression node.
+  3. `Accept`: is a method which takes instance of `IExpressionVisitor` to transform this node and return the result.
+
+The `IExpressionVisitor` have a base implementation `ExpressionVisitorBase` with basic visiting for all nodes in an expression.
+
+The `IExpression` have a predefined implementation in the following types:
+
+  * `ArrayExpression`: represent an expression with a sequence of expressions.
+  * `BinaryExpression`: represent an expression with two operands.
+  * `ConstantExpression`: represent an expression with a constant value of one of the basic types.
+  * `IdentifierExpression`: represent an expression that is an identifier.
+  * `IfExpression`: represent an `if` expression.
+  * `UnaryExpression`: represent an expression with one operand.
+
+Finally, the class `Expressions` contains a set of functions to create instances of all supported expressions.
+
+> Note that all functions inside `Expressions` validate input types
+
+```csharp
+// 3 * 4 + 5
+
+Expressions.Add(
+    Expressions.Multiply(
+        Expressions.Constant(3),
+        Expressions.Constant(4)
+        ),
+    Expressions.Constant(5)
+);
+```
+
+#### Parser
+
+The parser is responsible of taking the tokens and create the expression tree, also it validate the inputs and finally optimize the tree.
+
+The parser contains three main types `IParser`, `IParserFactory` and `IParsingResult`.
+
+The type `IParsingResult` represent the final result of parsing and it contains the properties:
+
+   1. `Expression`: is the root expression tree of parsed expression.
+   2. `Names`: is a table of names that is referenced inside the `Expression`, the table key is a hash value of referenced identifier.
+
+TBD...
