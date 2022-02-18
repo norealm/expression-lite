@@ -74,7 +74,7 @@ The `IScanner` have a single method `Scan`, which takes a string and return a se
 
 > The implementation of `IScanner` used by `ScannerFactory` is a pull-based scanner, which means it will not scan the entire source at the call, rather it will return a token by token till we reach the end of string, this way the scanner is more efficient.
 
-> The type `Scanner` is the default implementation which get returned by `ScannerFactory`.
+> The type `ExpressionScanner` is the default implementation which get returned by `ScannerFactory`.
 
 ```csharp
 var factory = new ScannerFactory();
@@ -165,6 +165,83 @@ The parser contains three main types `IParser`, `IParserFactory` and `IParsingRe
 The type `IParsingResult` represent the final result of parsing and it contains the properties:
 
    1. `Expression`: is the root expression tree of parsed expression.
-   2. `Names`: is a table of names that is referenced inside the `Expression`, the table key is a hash value of referenced identifier.
+   2. `Names`: a table of names that is referenced inside the `Expression`, the table key is a hash value of referenced identifier.
 
-TBD...
+The `IParserFactory` creates instance of `IParser` using input `ParserOptions`. another overload takes the `ParserOptions` as well as an instance of `IScanner` and a sequence of `INameProvider`.
+
+The difference between the 1st and 2nd overloads that the 1st overload don't allow identifiers in the expression.
+
+The `ParserOptions` have the following properties:
+
+  * `SubstituteIdentifierWithPlainValue`: when set to true, any identifier with a value of a primitive type get substituted the the value directly.
+  * `OptimizeConstantOperations`: when set to true, allow expression optimizer to evaluate all nodes with primitive types.
+  * `OptimizationLevels`: is the number of iteration to loop over the node to optimize them. default to `3`.
+  * `MaxOptimizationLevels`: a constant define the maximum number of optimization iterations.
+
+The `ParserFactory` is the default implementation for `IParserFactory`.
+
+> The type `ExpressionParser` is the default parser implementation which get returned by `ParserFactory`.
+
+The parser responsible for the following:
+
+  * check the expression against expression grammar.
+  * validate the expression content data types.
+  * validate circular reference for identifiers
+  * construct the expression tree.
+  * optimize the expression tree.
+
+```csharp
+var scannerOptions = new ScannerOptions();
+var scannerFactory = new ScannerFactory();
+var scanner = scannerFactory.GetScanner(scannerOptions);
+
+var parserOptions = new ParserOptions();
+var parserFactory = new ParserFactory();
+var parser = parserFactory.GetParser(parserOptions, scanner, Enumerable.Empty<INameProvider>());
+
+var tokens = scanner.Scan("3 * 4 + 5");
+var result = parser.Parse(tokens);
+```
+
+### Stage 3: Generation
+
+In this stage we take the parser result in `IParserResult` and generate the final result. ExpressionLite have two code generators bundled with it.
+
+   1. Runtime: this generator convert the parser result to a runtime function.
+   2. LINQ: this generator convert the parser result to a `LINQ Expression` tree.
+
+The generic interface `IGenerator<T>` represent the generator interface where `T` is the type of the generated result, e.g. the runtime generator have `T = System.Delegate` and the LINQ expression generator have `T = System.Linq.Expressions.LambdaExpression`.
+
+The `IGenerator<T>` have the following methods:
+
+  1. `Generate(IParsingResult)`: takes object of type `IParsingResult` and return object of type `T`.
+  2. `Generate(IParsingResult, Type)`: takes object of type `IParsingResult` and `Type` to bind the result to then return object of type `T`.
+
+The type `RuntimeMethodGenerator` implements the logic for runtime method generation, and `LinqExpressionGenerator` implements the logic for LINQ Expression generation.
+
+```csharp
+var scannerOptions = new ScannerOptions();
+var scannerFactory = new ScannerFactory();
+var scanner = scannerFactory.GetScanner(scannerOptions);
+
+var parserOptions = new ParserOptions();
+var parserFactory = new ParserFactory();
+var parser = parserFactory.GetParser(parserOptions, scanner, Enumerable.Empty<INameProvider>());
+
+var tokens = scanner.Scan("3 * 4 + 5");
+var result = parser.Parse(tokens);
+
+var methodGenerator = new RuntimeMethodGenerator();
+var method = (Func<decimal>)methodGenerator.Generate(result);
+// method() ==> 17
+
+var linqGenerator = new LinqExpressionGenerator();
+var linq = linqGenerator.Generate(result);
+```
+
+These two types also define the generic `Generate` which take the expected input type and expected return type:
+
+  * `Generate<T>(IParsingResult)`: produce a result with `T` as return type and no inputs.
+  * `Generate<T, TR>(IParsingResult)`: produce a result with return type `TR` and input type `T`.
+
+To make your life easier the `Generator` static class have the extension methods `ToLinqExpression` and `ToRuntimeMethod` which do exactly as the above code snippet.
