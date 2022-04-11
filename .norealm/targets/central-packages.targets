@@ -1,0 +1,89 @@
+<Project InitialTargets="CheckPackageReferences">
+
+  <PropertyGroup>
+    <EnableCentralPackageVersions Condition="'$(ManagePackageVersionsCentrally)' == 'true'">false</EnableCentralPackageVersions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
+    <CentralPackagesFile Condition="'$(CentralPackagesFile)' == '' OR !Exists('$(CentralPackagesFile)')">$(RootDir)Packages.props</CentralPackagesFile>
+    <CentralPackagesFile Condition="'$(CentralPackagesFile)' == ''">$(MSBuildStartupDirectory)/Packages.props</CentralPackagesFile>
+
+    <EnableCentralPackageVersions Condition="!Exists('$(CentralPackagesFile)')">false</EnableCentralPackageVersions>
+
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current' And '$(EnableCentralPackageVersions)' != 'false'">$(CentralPackagesFile);$(MSBuildAllProjects)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
+    <GlobalPackageReference Condition=" $([MSBuild]::ValueOrDefault('$(EnableGlobalPackageReferencePrivateAssetsAll)', 'true')) ">
+      <IncludeAssets>Analyzers;Build;BuildMultitargeting;BuildTransitive</IncludeAssets>
+      <PrivateAssets>All</PrivateAssets>
+    </GlobalPackageReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
+    <PackageReference Update="Microsoft.AspNetCore.App"
+                      Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'"
+                      IsImplicitlyDefined="true" />
+
+    <PackageReference Update="Microsoft.AspNetCore.All"
+                      Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'"
+                      IsImplicitlyDefined="true" />
+
+    <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" />
+    <_OriginalPackageReference Include="@(PackageReference->ClearMetadata())" />
+  </ItemGroup>
+
+  <Import Project="$(CentralPackagesFile)" Condition=" '$(EnableCentralPackageVersions)' != 'false' " />
+
+  <ItemGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
+    <PackageReference Include="@(GlobalPackageReference)" Condition=" '$(EnableGlobalPackageReferences)' != 'false' " />
+
+    <_PackageReferenceWithVersionOverrideButNoCentralVersion Include="@(PackageReference->HasMetadata('VersionOverride')->ClearMetadata())"
+                                                             Exclude="@(PackageReference->HasMetadata('Version'))"
+                                                             Condition=" '$(EnablePackageVersionOverride)' != 'false' And '$(EnablePackageVersionOverrideWithoutCentralVersion)' == 'false' " />
+
+    <_PackageReferenceWithVersionOverride Include="@(PackageReference->HasMetadata('VersionOverride'))"
+                                          Version="%(VersionOverride)"
+                                          Condition=" '$(EnablePackageVersionOverride)' != 'false' " />
+
+    <PackageReference Remove="@(_PackageReferenceWithVersionOverride)" Condition=" '$(EnablePackageVersionOverride)' != 'false' " />
+    <PackageReference Include="@(_PackageReferenceWithVersionOverride)" Condition=" '$(EnablePackageVersionOverride)' != 'false' " />
+    <_PackageReferenceWithVersionOverride Remove="@(_PackageReferenceWithVersionOverride)" />
+  </ItemGroup>
+
+  <Target Name="CheckPackageReferences"
+          Condition=" '$(EnableCentralPackageVersions)' != 'false' And '$(DesignTimeBuild)' != 'true' And @(PackageReference->Count()) > 0 ">
+
+    <ItemGroup Condition=" '$(EnableGlobalPackageReferences)' != 'false' ">
+      <_DuplicateGlobalPackageReference Include="@(_OriginalPackageReference)"
+                                        Condition=" '@(GlobalPackageReference)' == '@(_OriginalPackageReference)' and '%(Identity)' != '' " />
+    </ItemGroup>
+
+    <Error
+      Text="The package reference '%(_DuplicateGlobalPackageReference.Identity)' is already defined as a GlobalPackageReference in '$(CentralPackagesFile)'.  Individual projects do not need to include a PackageReference if a GlobalPackageReference is declared."
+      Condition=" '$(EnableGlobalPackageReferences)' != 'false' And @(_DuplicateGlobalPackageReference->Count()) > 0"
+      File="$(MSBuildProjectFullPath)" />
+
+    <Error
+      Text="The package reference '%(_PackageReferenceWithVersion.Identity)' should not specify a version.  Please specify the version in '$(CentralPackagesFile)' or set VersionOverride to override the centrally defined version."
+      Condition=" @(_PackageReferenceWithVersion->Count()) > 0 And '%(_PackageReferenceWithVersion.IsImplicitlyDefined)' != 'true' And '$(EnablePackageVersionOverride)' != 'false' "
+      File="$(MSBuildProjectFullPath) "/>
+
+    <Error
+      Text="The package reference '%(_PackageReferenceWithVersion.Identity)' should not specify a version.  Please specify the version in '$(CentralPackagesFile)'."
+      Condition=" @(_PackageReferenceWithVersion->Count()) > 0 And '%(_PackageReferenceWithVersion.IsImplicitlyDefined)' != 'true' And '$(EnablePackageVersionOverride)' == 'false'"
+      File="$(MSBuildProjectFullPath) "/>
+
+    <Error
+      Text="The package reference '%(PackageReference.Identity)' must have a version defined in '$(CentralPackagesFile)'."
+      Condition=" '%(PackageReference.IsImplicitlyDefined)' != 'true' And '%(PackageReference.Version)' == '' "
+      File="$(MSBuildProjectFullPath)" />
+
+    <Error
+      Text="The package reference '%(_PackageReferenceWithVersionOverrideButNoCentralVersion.Identity)' must have a version defined in '$(CentralPackagesFile)'."
+      Condition=" @(_PackageReferenceWithVersionOverrideButNoCentralVersion->Count()) > 0 "
+      File="$(MSBuildProjectFullPath)" />
+  </Target>
+
+</Project>

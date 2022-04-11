@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+
+    <PackageDirName Condition="'$(PackageDirName)' == ''">.packages</PackageDirName>
+    <BuildDirName Condition="'$(BuildDirName)' == ''">.build</BuildDirName>
+    <SourceDirName Condition="'$(SourceDirName)' == ''">src</SourceDirName>
+    <CodeBuildDirName Condition="'$(CodeBuildDirName)' == ''">bin</CodeBuildDirName>
+
+    <InternalName Condition="'$(InternalName)' == ''">$(MSBuildProjectName)</InternalName>
+    <PublicName Condition="'$(PublicName)' == ''">$(MSBuildProjectName)</PublicName>
+    <CurrentVersion Condition="'$(CurrentVersion)' == ''">0.0.0</CurrentVersion>
+    <PreReleaseVersion Condition="'$(PreReleaseVersion)' == ''">1</PreReleaseVersion>
+
+    <StartupDir Condition="'$(StartupDir)' == ''">$(MSBuildThisFileDirectory)../../</StartupDir>
+    <BuildDir Condition="'$(BuildDir)' == ''">$(StartupDir)$(BuildDirName)/</BuildDir>
+
+    <RootDir>$(MSBuildThisFileDirectory)../../</RootDir>
+    <SourceDir>$(RootDir)$(SourceDirName)/</SourceDir>
+    <PackageDir>$(StartupDir)$(PackageDirName)/</PackageDir>
+
+    <BaseIntermediateOutputPath>$(BuildDir)obj/$(InternalName)/</BaseIntermediateOutputPath>
+
+    <OutputPath Condition="'$(AppOutDirName)' != ''">$(BuildDir)$(CodeBuildDirName)/$(Configuration)/$(AppOutDirName)/</OutputPath>
+    <OutputPath Condition="'$(AppOutDirName)' == ''">$(BuildDir)$(CodeBuildDirName)/$(Configuration)/$(InternalName)/</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+
+    <LogoFile>$(MSBuildThisFileDirectory)../asset/logo.png</LogoFile>
+    <LicenseFile>$(RootDir)/LICENSE</LicenseFile>
+    <ReleaseFile Condition="Exists('$(RootDir)/RELEASE')">$(RootDir)/RELEASE</ReleaseFile>
+  </PropertyGroup>
+</Project>

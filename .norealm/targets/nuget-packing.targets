@@ -1,0 +1,22 @@
+<Project>
+
+  <Target Name="PackingProjectsNotAllowed" BeforeTargets="Pack" Condition="'$(AllowPacking)' != 'true'">
+    <Error
+      Text="The AllowPacking flag must be set to true in order to create a nuget package, please set it to true."
+      File="$(MSBuildProjectFullPath)" />
+  </Target>
+
+  <Target Name="CreateNugetCacheDirectory" BeforeTargets="CollectPackageReferences" Condition="'$(AllowPacking)' == 'true'">
+    <MakeDir Directories="$(PackageDir)" Condition="!Exists('$(PackageDir)')" />
+  </Target>
+
+  <Target Name="MoveNugetPackages" AfterTargets="Pack" Condition="'$(AllowPacking)' == 'true'">
+    <ItemGroup>
+      <NugetPackeges Include="$(OutputPath)*.nupkg"/>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NugetPackeges)" DestinationFolder="$(PackageDir)" OverwriteReadOnlyFiles="true" />
+    <Delete Files="@(NugetPackeges)" />
+  </Target>
+
+</Project>

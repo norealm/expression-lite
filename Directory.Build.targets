@@ -1,3 +1,4 @@
 <Project>
 	<Import Project="$(MSBuildThisFileDirectory)../Directory.Build.targets" Condition="Exists('$(MSBuildThisFileDirectory)../Directory.Build.targets')" />
+    <Import Project=".norealm/norealm.targets" />
 </Project>

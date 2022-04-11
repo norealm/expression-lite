@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="targets/central-packages.targets" />
+  <Import Project="targets/nuget-packing.targets" />
+</Project>

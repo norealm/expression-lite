@@ -1,8 +1,0 @@
-<Project>
-  <Import Project="names.props" />
-  <Import Project="version.props" />
-  <Import Project="nuget.props" />
-
-  <Import Project="central-packages.targets" />
-  <Import Project="nuget-packing.targets" />
-</Project>

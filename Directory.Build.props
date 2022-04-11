@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" Condition="Exists('$(MSBuildThisFileDirectory)../Directory.Build.props')" />
-  <Import Project=".norealm/norealm.proj" />
+  <Import Project=".norealm/norealm.props" />
 
   <PropertyGroup>
     <CentralPackagesFile>$(MSBuildThisFileDirectory)packages.props</CentralPackagesFile>
