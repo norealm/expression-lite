@@ -1,3 +1,7 @@
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
+[![NuGet](https://img.shields.io/nuget/v/NoRealm.ExpressionLite.svg)](https://www.nuget.org/packages/NoRealm.ExpressionLite)
+[![release](https://img.shields.io/github/v/release/norealm/expression-lite)](/norealm/expression-lite/releases/latest)
+
 ## Expression Lite
 
 Expression Lite is a powerful expression compiler for .NET
